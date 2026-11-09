@@ -1,0 +1,40 @@
+/* ------------------------------------------------------------------
+   Thermal receipt (58 mm / 80 mm). The width comes from --paper.
+   On screen #print-root is kept off-screen (but measurable); when
+   printing, only #print-root is shown.
+------------------------------------------------------------------- */
+#print-root {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+}
+
+.receipt {
+  --paper: 58mm;
+  width: var(--paper);
+  padding: 3mm 3.5mm 4mm;
+  color: #000;
+  background: #fff;
+  font-family: 'Noto Sans Bengali', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+.receipt .r-shop { text-align: center; font-size: 18px; font-weight: 700; line-height: 1.25; margin-bottom: 1mm; }
+.receipt .r-center { text-align: center; }
+.receipt .r-bold { font-weight: 700; }
+.receipt .r-sep { border-top: 1px dashed #000; margin: 1.5mm 0; }
+.receipt .r-row { display: flex; justify-content: space-between; gap: 2mm; }
+.receipt .r-row > span:last-child { white-space: nowrap; text-align: right; }
+.receipt .r-item { margin-bottom: 0.8mm; }
+.receipt .r-sub { padding-left: 2mm; }
+.receipt .r-total { font-size: 15px; font-weight: 700; margin: 0.6mm 0; }
+.receipt .r-footer { margin-top: 1mm; }
+
+@media print {
+  html, body { background: #fff !important; height: auto !important; overflow: visible !important; }
+  body > *:not(#print-root) { display: none !important; }
+  #print-root { position: static; left: auto; }
+  .receipt { box-shadow: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
