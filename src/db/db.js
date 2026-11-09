@@ -13,6 +13,8 @@ import Dexie from 'dexie';
  * sales     { id, createdAt, dayKey, items[], subtotal, discount, rounding, total,
  *             paid, change, due, customerId?, customerName?, customerBalanceAfter? }
  * settings  { key: 'shop', value: {...} }
+ * auth      (v2) { key: 'owner', ...owner account, PIN hash } and { key: 'session', signedInAt }
+ *             See src/auth/localAuth.js. Never included in backup files.
  *
  * To change the schema later, add db.version(2).stores({...}) — never edit version(1).
  */
@@ -24,6 +26,11 @@ db.version(1).stores({
   ledger: '++id, customerId, createdAt, saleId',
   sales: '++id, createdAt, dayKey, customerId',
   settings: 'key',
+});
+
+// v2: local owner account + sign-in session. Existing tables are kept as they are.
+db.version(2).stores({
+  auth: 'key',
 });
 
 /** Ask the browser not to evict our data when the tablet runs low on space. */

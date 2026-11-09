@@ -19,13 +19,16 @@ completely without internet and installs on an Android tablet with
 
 | Screen | What it does |
 |---|---|
+| **Splash** | An animated logo and app name each time the app opens (about 2 seconds, tap to skip). The same logo is the home-screen icon, and Android's launch screen uses the same green. |
+| **Sign in** | First run: shop name, owner name, mobile number and a 4–6 digit PIN. After that the app stays signed in until **Log out**; then it asks for the PIN only. The PIN is stored hashed (PBKDF2). 5 wrong tries lock sign-in for 1 minute. Works offline. See `src/auth/README.md`. |
 | **বিক্রি / Billing** | Tap products, or scan barcodes with the camera or a scanner gun. For loose items you enter the weight in **kg**, **grams** or **Taka** ("৫০ টাকার পেঁয়াজ"), and the price is calculated as you type. The screen shows the running total, discount (৳ or %), cash received, change, and the amount that goes to baki. |
 | **Receipt** | Bangla receipt sized for **58 mm** (or 80 mm) thermal paper, printed through the normal browser print dialog. The shop name is at the top. Bills can be reprinted from the report or the khata. |
-| **পণ্য / Products** | Name in Bangla and English, photo (taken with the camera, auto-shrunk), category, type (loose per kg / packaged per piece), price, optional barcode, stock and low-stock alert level. |
+| **Demo items** | 20 common items (rice, dal, atta, sugar, salt, oil, onion, potato, garlic, egg, tea, biscuit, noodles, soap, detergent…) with Bangla + English names, typical Taka prices and starting stock. They are added after the first sign-in, and again from Settings at any time. Each has a built-in offline icon; add a photo to replace it. |
+| **পণ্য / Products** | Name in Bangla and English, photo (taken with the camera, auto-shrunk) or a built-in icon, category, type (loose per kg / packaged per piece), price, optional barcode, stock and low-stock alert level. |
 | **স্টক / Stock** | Stock goes down automatically with every sale. A low-stock warning list (also shown as a badge in the menu) has quick "add stock" buttons for when new goods arrive. |
 | **বাকি খাতা / Credit** | Customers with name and phone. Credit sales go to the khata automatically. You can record payments or add old dues by hand, and see each customer's due and full history. |
 | **রিপোর্ট / Report** | For any day: total sales, number of bills, cash vs credit, dues collected, expected cash in the drawer, top-selling items and the list of bills. |
-| **সেটিংস / Settings** | Shop name, address and phone, currency symbol (৳), receipt footer, paper width, rounding to whole Taka, language, test print, and backup download/restore. |
+| **সেটিংস / Settings** | Owner account (change PIN, log out), shop name, address and phone, currency symbol (৳), receipt footer, paper width, rounding to whole Taka, language, test print, backup download/restore, **Load demo items**, and **Clear all data** (asks for the PIN). |
 
 ---
 
@@ -71,7 +74,7 @@ The camera only works on **HTTPS** or `localhost`, so the easiest real-device te
 npm run preview -- --host
 ```
 
-Then open the `Network:` address it prints on the tablet. The camera scanner won't start there because that address isn't HTTPS.
+Then open the `Network:` address it prints on the tablet. The camera scanner and setting a PIN won't work there, because that address isn't HTTPS. Use the Vercel link for real testing.
 
 ---
 
@@ -141,7 +144,12 @@ Answer the questions with the defaults. It prints your live URL.
 2. Wait for the message **"অ্যাপটি এখন ইন্টারনেট ছাড়াও চলবে"** (*the app now works without internet*).
 3. Tap **⋮ → Add to Home screen / Install app**, or go to **সেটিংস → হোম স্ক্রিনে ইনস্টল করুন**.
 4. Open it from the home screen icon. It runs full-screen like a normal app, with or without internet.
-5. Allow the camera when you tap **স্ক্যান** the first time.
+5. The first time, create the owner account (shop name, owner name, mobile, PIN). The 20 demo items are added automatically, so edit their prices to match your shop.
+6. Allow the camera when you tap **স্ক্যান** the first time.
+
+**Forgot the PIN?** It can't be recovered, because there is no server. On the PIN
+screen, **পিন ভুলে গেছেন?** (Forgot PIN?) lets you erase the device and start again;
+then restore your latest backup file.
 
 **Keep your data safe.** All data lives only on that tablet. Installing the app
 makes the browser keep its storage, and Settings shows whether storage is
@@ -173,14 +181,19 @@ at all.
 
 ```
 src/
+  brand/                   logo-mark.svg (the logo) + Logo.jsx
+  auth/                    Offline owner account: PIN hashing, lockout, AuthProvider (Supabase-ready, see its README)
   domain/billing.js        Pure billing math: cart reducer, totals, discount, rounding, change (unit-tested)
   db/                      Dexie database and data functions
     db.js                  schema (products, customers, ledger, sales, settings)
     sales.js               createSale(): bill + stock reduction + khata in ONE transaction
-    products.js, customers.js, reports.js, settings.js, backup.js, sampleData.js
+    products.js, customers.js, reports.js, settings.js
+    backup.js              backup download/restore + clearAllData()
+    demoItems.js           the 20 demo grocery items
   features/                One folder per screen
-    billing/  products/  stock/  khata/  reports/  settings/
-  components/              Shared UI: Modal, NumPad, BarcodeScanner, NumberDialog, toasts/confirm…
+    auth/  billing/  products/  stock/  khata/  reports/  settings/
+  components/              Shared UI: Splash, Modal, NumPad, BarcodeScanner, NumberDialog, toasts/confirm,
+                           itemIcons.jsx (the offline grocery icons)…
   print/                   Receipt.jsx (58/80 mm layout) + PrintProvider (browser print)
   i18n/                    strings.js (all Bangla + English text), I18nProvider (digits, ৳, kg/g)
   vision/                  Plug-in point for the future camera-AI module (see below)
@@ -201,7 +214,21 @@ module and register it in `src/vision/index.js`. Billing, stock and receipt
 code stays unchanged. See `src/vision/README.md` for the interfaces and notes
 on keeping models available offline.
 
+### Changing the logo
+
+Edit `src/brand/logo-mark.svg`, then rebuild the favicon and home-screen icons
+(this needs Playwright's Chromium, which is not a project dependency):
+
+```bash
+npx -y playwright@1 install chromium
+```
+
+```bash
+npm install --no-save playwright@1 && node scripts/make-icons.cjs
+```
+
 ### Changing the database later
 
-Add a new `db.version(2).stores({...})` (with an `.upgrade()` if needed) in
-`src/db/db.js`. Never edit `version(1)`, because tablets already have data in it.
+Add a new `db.version(3).stores({...})` (with an `.upgrade()` if needed) in
+`src/db/db.js`. Never edit the existing versions (1 = shop data, 2 = sign-in),
+because tablets already have data in them.

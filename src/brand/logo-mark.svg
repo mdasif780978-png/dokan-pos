@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Dokan Hishab</title>
+  <path d="M168 226H344V398l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14Z" fill="#003d2c" opacity=".35" transform="translate(6 8)"/>
+  <path d="M168 226H344V398l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14l-11.5 14l-11.5-14Z" fill="#ffffff"/>
+  <g stroke-linecap="round" fill="none">
+    <path d="M192 262H300M192 292H322M192 322H272" stroke="#9cc9b6" stroke-width="12"/>
+    <path d="M192 350H322" stroke="#9cc9b6" stroke-width="4" stroke-dasharray="2 10"/>
+    <path d="M192 378H232M276 378H322" stroke="#006a4e" stroke-width="16"/>
+  </g>
+  <rect x="112" y="84" width="288" height="26" rx="13" fill="#ffffff"/>
+  <path d="M124.0 104H176.8L162.4 176A31.2 31.2 0 0 1 100.0 176Z" fill="#f42a41"/>
+  <path d="M176.8 104H229.6L224.8 176A31.2 31.2 0 0 1 162.4 176Z" fill="#ffffff"/>
+  <path d="M229.6 104H282.4L287.2 176A31.2 31.2 0 0 1 224.8 176Z" fill="#f42a41"/>
+  <path d="M282.4 104H335.2L349.6 176A31.2 31.2 0 0 1 287.2 176Z" fill="#ffffff"/>
+  <path d="M335.2 104H388.0L412.0 176A31.2 31.2 0 0 1 349.6 176Z" fill="#f42a41"/>
+</svg>

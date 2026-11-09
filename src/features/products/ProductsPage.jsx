@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Barcode, Package, Plus, Search } from 'lucide-react';
 import { db } from '../../db/db';
 import { isLowStock, matchesSearch } from '../../db/products';
-import { loadSampleProducts } from '../../db/sampleData';
+import { loadDemoItems } from '../../db/demoItems';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useToast } from '../../components/Feedback';
 import { CategoryChips, categoriesOf } from '../../components/CategoryChips';
@@ -29,8 +29,8 @@ export default function ProductsPage() {
   );
 
   const loadSamples = async () => {
-    await loadSampleProducts();
-    toast(t('products.sampleLoaded'), 'success');
+    const added = await loadDemoItems();
+    toast(t('auth.demoLoaded', { n: num(added) }), 'success');
   };
 
   return (

@@ -2,7 +2,10 @@ import { db } from './db';
 import { AppError } from '../lib/errors';
 import { dayKey } from '../lib/format';
 
+// The `auth` table (owner account + PIN hash) is deliberately NOT part of backups:
+// a backup file can be shared safely, and restoring it keeps this device's own PIN.
 const TABLES = ['products', 'customers', 'ledger', 'sales', 'settings'];
+const LOCAL_KEYS = ['dokan.cart'];
 
 /** Download all data as one JSON file (keep it on Google Drive / WhatsApp to yourself). */
 export async function exportBackup() {
@@ -35,4 +38,18 @@ export async function importBackup(file) {
       if (rows.length) await db.table(t).bulkAdd(rows);
     }
   });
+}
+
+/** Erase everything on this device, including the owner account. The app returns to first-time setup. */
+export async function clearAllData() {
+  await db.transaction('rw', [...TABLES, 'auth'].map((t) => db.table(t)), async () => {
+    for (const t of [...TABLES, 'auth']) await db.table(t).clear();
+  });
+  for (const key of LOCAL_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
 }

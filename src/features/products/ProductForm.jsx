@@ -7,8 +7,10 @@ import { useConfirm, useShowError, useToast } from '../../components/Feedback';
 import { useI18n } from '../../i18n/I18nProvider';
 import { DEFAULT_LOW_STOCK, deleteProduct, saveProduct } from '../../db/products';
 import { fileToThumbnail } from '../../lib/image';
+import { ICON_KEYS, ITEM_ICONS, ItemIcon } from '../../components/itemIcons';
+import { ProductThumb } from '../../components/ProductThumb';
 
-const DEFAULT_CATEGORIES = ['চাল-ডাল', 'মুদি', 'তেল', 'মসলা', 'সবজি', 'ডিম-দুধ', 'নাস্তা', 'পানীয়', 'প্রসাধনী'];
+const DEFAULT_CATEGORIES = ['চাল-ডাল', 'মুদি', 'তেল', 'মসলা', 'সবজি', 'ডিম-দুধ', 'নাস্তা', 'পানীয়', 'প্রসাধনী', 'ধোয়ামোছা'];
 
 const toForm = (p) => ({
   id: p?.id,
@@ -21,11 +23,12 @@ const toForm = (p) => ({
   stock: p?.stock != null ? String(p.stock) : '',
   lowStock: p?.lowStock != null ? String(p.lowStock) : '',
   photo: p?.photo,
+  icon: p?.icon,
 });
 
 /** Add / edit a product. `product` undefined = new product. */
 export function ProductForm({ product, categories, onClose }) {
-  const { t, name } = useI18n();
+  const { t, lang, name } = useI18n();
   const toast = useToast();
   const confirm = useConfirm();
   const showError = useShowError();
@@ -105,18 +108,49 @@ export function ProductForm({ product, categories, onClose }) {
                 <X size={22} />
               </button>
             </div>
+          ) : form.icon ? (
+            <ProductThumb product={form} className="photo-icon-preview" />
           ) : (
             <button type="button" className="photo-placeholder" onClick={() => fileRef.current?.click()}>
               <ImagePlus size={40} />
               <span>{t('form.addPhoto')}</span>
             </button>
           )}
-          {form.photo && (
+          {(form.photo || form.icon) && (
             <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
               <ImagePlus size={22} /> {t('form.addPhoto')}
             </button>
           )}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={onPhoto} />
+          {!form.photo && (
+            <div className="field-block">
+              <span>{t('form.icon')}</span>
+              <div className="icon-picker">
+                <button
+                  type="button"
+                  className={`icon-pick icon-pick-none ${!form.icon ? 'selected' : ''}`}
+                  onClick={() => setForm((f) => ({ ...f, icon: undefined }))}
+                  title={t('form.noIcon')}
+                  aria-label={t('form.noIcon')}
+                >
+                  <X size={18} />
+                </button>
+                {ICON_KEYS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`icon-pick ${form.icon === key ? 'selected' : ''}`}
+                    style={{ background: ITEM_ICONS[key].bg }}
+                    onClick={() => setForm((f) => ({ ...f, icon: key }))}
+                    title={ITEM_ICONS[key].label[lang]}
+                    aria-label={ITEM_ICONS[key].label[lang]}
+                  >
+                    <ItemIcon name={key} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="form-fields">

@@ -4,7 +4,6 @@ import { BookUser, Boxes, ChartColumn, Languages, Package, Settings, ShoppingCar
 import { db } from '../db/db';
 import { isLowStock } from '../db/products';
 import { useI18n } from '../i18n/I18nProvider';
-import { UpdateBanner } from './UpdateBanner';
 
 const NAV = [
   { to: '/', icon: ShoppingCart, label: 'nav.billing', end: true },
@@ -38,7 +37,6 @@ export function Layout() {
         </button>
       </nav>
       <main className="main">
-        <UpdateBanner />
         <Outlet />
       </main>
     </div>

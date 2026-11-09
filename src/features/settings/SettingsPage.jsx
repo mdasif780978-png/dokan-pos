@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, Printer, Smartphone, Upload } from 'lucide-react';
+import { Download, KeyRound, LogOut, PackagePlus, Printer, Smartphone, Trash2, Upload, UserRound } from 'lucide-react';
 import { saveSettings, useSettings } from '../../db/settings';
-import { exportBackup, importBackup } from '../../db/backup';
+import { clearAllData, exportBackup, importBackup } from '../../db/backup';
+import { loadDemoItems } from '../../db/demoItems';
+import { useAuth } from '../../auth/AuthProvider';
+import { PinConfirmDialog } from '../auth/PinConfirmDialog';
+import { ChangePinDialog } from './ChangePinDialog';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useConfirm, useShowError, useToast } from '../../components/Feedback';
 import { Segmented } from '../../components/Segmented';
@@ -13,8 +17,10 @@ const FIELDS = ['shopName', 'address', 'phone', 'currency', 'receiptFooter', 'pa
 const pick = (s) => Object.fromEntries(FIELDS.map((k) => [k, s[k]]));
 
 export default function SettingsPage() {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, num, digits } = useI18n();
   const settings = useSettings();
+  const { owner, signOut } = useAuth();
+  const [dialog, setDialog] = useState(null); // 'changePin' | 'clearAll'
   const toast = useToast();
   const confirm = useConfirm();
   const showError = useShowError();
@@ -60,11 +66,50 @@ export default function SettingsPage() {
     }
   };
 
+  const logout = async () => {
+    if (await confirm({ message: t('auth.logoutConfirm'), confirmText: t('auth.logout') })) await signOut();
+  };
+
+  const loadDemo = async () => {
+    try {
+      const added = await loadDemoItems();
+      toast(added ? t('auth.demoLoaded', { n: num(added) }) : t('settings.demoNone'), added ? 'success' : 'info');
+    } catch (err) {
+      showError(err);
+    }
+  };
+
+  const clearAll = async () => {
+    await clearAllData(); // signs out too: the app returns to first-time setup
+    toast(t('settings.cleared'), 'success');
+  };
+
   return (
     <div className="page settings">
       <header className="page-header">
         <h1>{t('settings.title')}</h1>
       </header>
+
+      {owner && (
+        <section className="panel account-panel">
+          <h2 className="panel-title">{t('auth.account')}</h2>
+          <div className="account-row">
+            <span className="avatar">
+              <UserRound size={28} />
+            </span>
+            <span className="list-main">
+              <span className="list-title">{owner.ownerName}</span>
+              <span className="list-sub">{digits(owner.phone)}</span>
+            </span>
+            <button type="button" className="btn btn-lg" onClick={() => setDialog('changePin')}>
+              <KeyRound size={22} /> {t('auth.changePin')}
+            </button>
+            <button type="button" className="btn btn-lg btn-danger-ghost" onClick={logout}>
+              <LogOut size={22} /> {t('auth.logout')}
+            </button>
+          </div>
+        </section>
+      )}
 
       <form className="panel form" onSubmit={save}>
         <h2 className="panel-title">{t('settings.shop')}</h2>
@@ -140,6 +185,12 @@ export default function SettingsPage() {
             <Upload size={24} /> {t('settings.import')}
           </button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={restore} />
+          <button type="button" className="btn btn-lg" onClick={loadDemo}>
+            <PackagePlus size={24} /> {t('settings.demo')}
+          </button>
+          <button type="button" className="btn btn-lg btn-danger-ghost" onClick={() => setDialog('clearAll')}>
+            <Trash2 size={24} /> {t('settings.clearAll')}
+          </button>
         </div>
         {persisted !== null && <p className={persisted ? 'ok-text' : 'low-text'}>{persisted ? t('settings.persisted') : t('settings.notPersisted')}</p>}
         <div className="row-gap">
@@ -157,6 +208,16 @@ export default function SettingsPage() {
         </div>
         <p className="muted small">v{__APP_VERSION__}</p>
       </section>
+
+      {dialog === 'changePin' && <ChangePinDialog onClose={() => setDialog(null)} />}
+      {dialog === 'clearAll' && (
+        <PinConfirmDialog
+          title={t('settings.clearAll')}
+          message={t('settings.clearAllText')}
+          onConfirm={clearAll}
+          onClose={() => setDialog(null)}
+        />
+      )}
     </div>
   );
 }

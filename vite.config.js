@@ -25,7 +25,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'any',
-        background_color: '#f4f5f1',
+        // Android builds its launch screen from this colour + the icon, so it matches the in-app splash.
+        background_color: '#006a4e',
         theme_color: '#006a4e',
         categories: ['business', 'finance', 'productivity'],
         icons: [

@@ -20,6 +20,7 @@ export function normalizeProduct(input) {
     stock: type === 'loose' ? round3(parseNum(input.stock)) : Math.round(parseNum(input.stock)),
     lowStock: Math.max(0, lowStock),
     photo: input.photo || undefined,
+    icon: input.icon || undefined, // offline icon key, see src/components/itemIcons.jsx
   };
 }
 

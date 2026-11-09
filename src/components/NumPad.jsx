@@ -7,13 +7,14 @@ import { toEnDigits } from '../lib/format';
  * Big touch-friendly number pad. `value` is a plain string with Latin digits ("12.5").
  * Also accepts a hardware keyboard (digits, Bangla digits, ".", Backspace, Enter).
  */
-export function NumPad({ value, onChange, onEnter, allowDecimal = true, maxDecimals = 3, maxLength = 9 }) {
+export function NumPad({ value, onChange, onEnter, allowDecimal = true, maxDecimals = 3, maxLength = 9, disabled = false }) {
   const { digits } = useI18n();
-  const state = useRef({ value, onChange, onEnter });
-  state.current = { value, onChange, onEnter };
+  const state = useRef({ value, onChange, onEnter, disabled });
+  state.current = { value, onChange, onEnter, disabled };
 
   const press = (key) => {
-    const { value: v, onChange: change } = state.current;
+    const { value: v, onChange: change, disabled: off } = state.current;
+    if (off) return undefined;
     if (key === 'back') return change(v.slice(0, -1));
     if (key === 'clear') return change('');
     if (key === '.') {
@@ -53,6 +54,7 @@ export function NumPad({ value, onChange, onEnter, allowDecimal = true, maxDecim
           key={k}
           type="button"
           className={`numpad-key ${k === 'back' || k === 'clear' ? 'numpad-key-fn' : ''}`}
+          disabled={disabled}
           onClick={() => press(k)}
           aria-label={k === 'back' ? 'Backspace' : k === 'clear' ? 'Clear' : k}
         >
